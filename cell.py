@@ -51,7 +51,17 @@ class Cell:
             self.block.x * BLOCK_SIZE + BLOCK_SIZE // 2,
             self.block.y * BLOCK_SIZE + BLOCK_SIZE // 2
         )
-        pygame.draw.circle(surface, self.color, center, BLOCK_SIZE // 2 - 1)
+
+        # Рисуем круг с полученным цветом
+        # pygame.draw.circle(surface, self.color, center, BLOCK_SIZE // 2 - 1)
+        # Рисуем квадрат с полученным цветом
+        pygame.draw.rect(surface,
+                         self.color,
+                         pygame.Rect(center[0] - BLOCK_SIZE // 2,
+                                     center[1] - BLOCK_SIZE // 2,
+                                     BLOCK_SIZE - 1,
+                                     BLOCK_SIZE - 1))
+
         # Рисуем направление
         direction_offset = self.direction.get_offset()
         end_point = (
@@ -70,7 +80,7 @@ class Cell:
 
     def process_action(self, world):
         """Обработка текущего действия клетки на основе текущего гена и его результата."""
-        if self.energy <= 0 or self.age >= 5000:
+        if self.energy <= 0 or self.age >= 1000 or (self.energy > self.max_energy and self.cell_type != CellType.PREDATOR):
             world.remove_cell(self)
             return
 
@@ -198,7 +208,7 @@ class Cell:
                 old_block.cell = None
                 self.block = new_block
                 new_block.cell = self
-                # self.energy -= MOVEMENT_COST
+                self.energy -= MOVEMENT_COST
                 return 2
         return 1
 

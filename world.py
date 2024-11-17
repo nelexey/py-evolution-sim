@@ -1,12 +1,13 @@
+import pygame
+
 from block import Block
 from cell import Cell, CellType
 from config import *
-import random
 
 class World:
-    def __init__(self):
-        self.width = WINDOW_WIDTH // BLOCK_SIZE
-        self.height = WINDOW_HEIGHT // BLOCK_SIZE
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
         self.blocks = [[Block(x, y) for y in range(self.height)] for x in range(self.width)]
         self.cells = []
 
@@ -31,11 +32,27 @@ class World:
             cell.block.cell = None
             self.cells.remove(cell)
 
-    def draw(self, surface):
+
+    def draw(self, surface, settings=None):
         surface.fill((0, 0, 0))
-        for row in self.blocks:
-            for block in row:
-                block.draw(surface)
+        block_size = BLOCK_SIZE  # Используем константу из config
+        for x in range(self.width):
+            for y in range(self.height):
+                block = self.blocks[x][y]
+                # Обновляем позицию отрисовки блока
+                block.rect = pygame.Rect(
+                    x * block_size,
+                    y * block_size,
+                    block_size,
+                    block_size
+                )
+                if block.cell and settings:
+                    original_color = block.cell.color
+                    block.cell.color = settings.get_cell_color(block.cell)
+                    block.draw(surface)
+                    block.cell.color = original_color
+                else:
+                    block.draw(surface)
 
     def get_block(self, x, y):
         if self.is_valid_position(x, y):
