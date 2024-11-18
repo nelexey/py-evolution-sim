@@ -12,21 +12,21 @@ def main():
     # Создаем окно фиксированного размера
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
+    pygame.display.set_caption('simulation processing')
 
     # Создаем панель управления
     control_panel = ControlPanel(width=200)
 
     # Создаем игровой мир с правильными размерами (без смещения)
-    game_width = WINDOW_WIDTH - control_panel.width
-    world = World(width=game_width // BLOCK_SIZE, height=WINDOW_HEIGHT // BLOCK_SIZE)
+    world = World(width=PLAYGROUND_WIDTH // BLOCK_SIZE, height=PLAYGROUND_HEIGHT // BLOCK_SIZE)
 
     # Создаем начальные клетки с учетом новой ширины
-    for _ in range(2000):
+    for _ in range(3000):
         x = random.randint(0, world.width - 1)
         y = random.randint(0, world.height - 1)
         world.add_cell(x, y)
 
-    for _ in range(400):
+    for _ in range(800):
         x = random.randint(0, world.width - 1)
         y = random.randint(0, world.height - 1)
         world.add_cell(x, y, CellType.PREDATOR)

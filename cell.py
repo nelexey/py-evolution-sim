@@ -16,7 +16,7 @@ class Cell:
         self.block.cell = self
         self.genome = genome if genome else self._generate_genome(cell_type)
         self.energy = CELL_ENERGY_START
-        self.max_energy = 800
+        self.max_energy = CELL_ENERGY_MAX
         self.age = 0
         self.direction = Direction.NORTH
         self.genome_step = 0
@@ -160,8 +160,21 @@ class Cell:
         return 1
 
     def _turn(self, world):
+        # next_gene = self.genome[(self.genome_step + 1) % 64]
+        # self.direction = Direction.from_genome_number(next_gene)
+        # return 2
+
         next_gene = self.genome[(self.genome_step + 1) % 64]
-        self.direction = Direction.from_genome_number(next_gene)
+
+        # Поворот на основе значения гена
+        if 17 <= next_gene <= 20:
+            # Повернуть влево на 90°
+            self.direction = self.direction.left()
+        elif 21 <= next_gene <= 24:
+            # Повернуть вправо на 90°
+            self.direction = self.direction.right()
+
+        # Переход к следующему гену
         return 2
 
     def _photosynthesis(self, world):

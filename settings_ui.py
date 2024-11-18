@@ -2,6 +2,8 @@ import pygame
 from enum import Enum
 import colorsys
 
+from config import *
+
 
 class DisplayMode(Enum):
     TYPES = 'Types'
@@ -14,8 +16,8 @@ class ControlPanel:
         self.width = width
         self.font = pygame.font.Font(None, 24)
         self.display_mode = DisplayMode.TYPES
-        self.fps = 120
-        self.frame_skip = 1
+        self.fps = FPS
+        self.frame_skip = 0
 
         # Цвета
         self.bg_color = (30, 30, 30)

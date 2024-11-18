@@ -26,3 +26,13 @@ class Direction(Enum):
             Direction.NORTHWEST: (-1, -1)
         }
         return offsets[self]
+
+    def left(self, steps=1):
+        """Поворачивает влево на заданное количество шагов (45° за шаг)."""
+        new_direction = (self.value - steps) % 8
+        return Direction(new_direction)
+
+    def right(self, steps=1):
+        """Поворачивает вправо на заданное количество шагов (45° за шаг)."""
+        new_direction = (self.value + steps) % 8
+        return Direction(new_direction)
