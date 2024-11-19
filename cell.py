@@ -104,6 +104,7 @@ class Cell:
             actions.update({
                 range(25, 33): self._photosynthesis,
                 range(41, 49): self._give_energy,  # Передача энергии
+                range(49, 57): self._byte,  # Атака, оставаясь на своём месте.
             })
         else:
             actions.update({
