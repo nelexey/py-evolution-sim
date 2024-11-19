@@ -16,11 +16,11 @@ class Cell:
         self.block.cell = self
         self.genome = genome if genome else self._generate_genome(cell_type)
         self.energy = CELL_ENERGY_START
-        self.max_energy = CELL_ENERGY_MAX
-        self.age = 0
-        self.direction = Direction.NORTH
-        self.genome_step = 0
         self.cell_type = cell_type
+        self.max_energy = CELL_ENERGY_MAX_PHOTOSYNTHETIC if cell_type == CellType.PHOTOSYNTHETIC else CELL_ENERGY_MAX_PREDATOR
+        self.age = 0
+        self.direction = Direction.get_random_direction()
+        self.genome_step = 0
         self.clan_id = clan_id if clan_id is not None else self._generate_clan_id()
 
         if cell_type == CellType.PHOTOSYNTHETIC:
@@ -80,7 +80,7 @@ class Cell:
 
     def process_action(self, world):
         """Обработка текущего действия клетки на основе текущего гена и его результата."""
-        if self.energy <= 0 or self.age >= 1000 or (self.energy > self.max_energy and self.cell_type != CellType.PREDATOR):
+        if self.energy <= 0 or self.age >= 1000 or self.energy > self.max_energy:
             world.remove_cell(self)
             return
 
@@ -107,7 +107,7 @@ class Cell:
         else:
             actions.update({
                 range(25, 33): self._attack,
-                range(41, 49): self._steal_energy,  # Новое действие для воровства энергии
+                range(41, 49): self._byte,  # Новое действие для воровства энергии
             })
 
         for number_range, action in actions.items():
@@ -178,7 +178,10 @@ class Cell:
         return 2
 
     def _photosynthesis(self, world):
-        self.energy += PHOTOSYNTHESIS_ENERGY
+        if self.energy + PHOTOSYNTHESIS_ENERGY > self.max_energy:
+            self.energy += self.max_energy - self.energy
+        else:
+            self.energy += PHOTOSYNTHESIS_ENERGY
         return 1
 
     def _reproduce(self, world):
@@ -207,6 +210,7 @@ class Cell:
         return 1
 
     def _attack(self, world):
+        """Атаковать жертву и переместиться на её место"""
         x, y = self.block.get_coordinates()
         dx, dy = self.direction.get_offset()
         next_x, next_y = x + dx, y + dy
@@ -214,7 +218,7 @@ class Cell:
         if world.is_valid_position(next_x, next_y) and not world.get_block(next_x, next_y).is_empty():
             victim = world.get_block(next_x, next_y).cell
             if victim.clan_id != self.clan_id:
-                self.energy += victim.energy
+                self.energy += victim.energy * 0.8
                 world.remove_cell(victim)
                 old_block = self.block
                 new_block = world.get_block(next_x, next_y)
@@ -225,30 +229,19 @@ class Cell:
                 return 2
         return 1
 
-    def _steal_energy(self, world):
-        """Ворует часть энергии у клетки впереди, если это не родственник."""
+    def _byte(self, world):
+        """Атаковать жертву, оставшись в своей клетке"""
         x, y = self.block.get_coordinates()
         dx, dy = self.direction.get_offset()
         next_x, next_y = x + dx, y + dy
 
         if world.is_valid_position(next_x, next_y) and not world.get_block(next_x, next_y).is_empty():
-            target = world.get_block(next_x, next_y).cell
-
-            # Проверка, является ли жертва родственником
-            if self.is_relative(target):
-                return 5  # Пропустить ход, если впереди родственник
-
-            # Воровать энергию у неродственной клетки
-            stolen_energy = target.energy * 0.2
-            self.energy += stolen_energy
-            target.energy -= target.energy * 0.4
-
-            # Возвращаем разные значения в зависимости от типа клетки впереди
-            if target.cell_type == CellType.PHOTOSYNTHETIC:
-                return 3  # Фотосинтетическая клетка (не родственник)
-            else:
-                return 4  # Хищная клетка (не родственник)
-        return 1  # Если впереди пусто или стена
+            victim = world.get_block(next_x, next_y).cell
+            if victim.clan_id != self.clan_id:
+                self.energy += victim.energy * 0.7
+                world.remove_cell(victim)
+                return 2
+        return 1
 
     def _give_energy(self, world):
         """Передает часть энергии клетке впереди, если она существует и не заполнена энергией."""
@@ -267,9 +260,9 @@ class Cell:
 
                 # Различные значения в зависимости от типа клетки впереди
                 if self.is_relative(target):
-                    return 5  # Родственная клетка
+                    return 4  # Родственная клетка
                 elif target.cell_type == CellType.PHOTOSYNTHETIC:
-                    return 3  # Фотосинтетическая клетка
+                    return 2  # Фотосинтетическая клетка
                 else:
-                    return 4  # Хищная клетка
+                    return 3  # Хищная клетка
         return 1  # Если впереди пусто или стена

@@ -1,4 +1,5 @@
 from enum import Enum
+import random
 
 class Direction(Enum):
     NORTH = 0
@@ -9,6 +10,10 @@ class Direction(Enum):
     SOUTHWEST = 5
     WEST = 6
     NORTHWEST = 7
+
+    @classmethod
+    def get_random_direction(cls):
+        return random.choice(list(cls))
 
     @classmethod
     def from_genome_number(cls, number):
