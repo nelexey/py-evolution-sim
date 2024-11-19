@@ -97,17 +97,18 @@ class Cell:
             range(9, 17): self._move_forward,
             range(17, 25): self._turn,
             range(33, 41): self._reproduce,
+            # range(49, 51): self._check_energy_level,
         }
 
         if self.cell_type == CellType.PHOTOSYNTHETIC:
             actions.update({
                 range(25, 33): self._photosynthesis,
-                range(41, 49): self._give_energy,  # Новое действие для передачи энергии
+                range(41, 49): self._give_energy,  # Передача энергии
             })
         else:
             actions.update({
                 range(25, 33): self._attack,
-                range(41, 49): self._byte,  # Новое действие для воровства энергии
+                range(41, 49): self._byte,  # Атака, оставаясь на своём месте.
             })
 
         for number_range, action in actions.items():
@@ -176,6 +177,15 @@ class Cell:
 
         # Переход к следующему гену
         return 2
+
+    def _check_energy_level(self, world):
+        """Возвращает код, представляющий уровень энергии клетки."""
+        if self.energy >= 0.6 * self.max_energy:
+            return 3  # Высокий уровень энергии
+        elif self.energy >= 0.2 * self.max_energy:
+            return 2  # Низкий уровень энергии
+        else:
+            return 1  # Очень низкий уровень энергии, критический
 
     def _photosynthesis(self, world):
         if self.energy + PHOTOSYNTHESIS_ENERGY > self.max_energy:
